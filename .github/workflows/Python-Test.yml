@@ -6,22 +6,57 @@ on:
         branches: [ main ]
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
+  lint:
+    name: Lint (ruff + black)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-        steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v4
-            
-            - name: Set Up Python
-              uses: actions/setup-python@v5
-              with:
-                python-version: '3.13.3'
-            
-            - name: Install dependencies
-              run: |
-                python -m pip install --upgrade pip
-                pip install pytest
-            
-            - name: Run Pytest
-              run: pytest test_main.py
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install lint tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black
+
+      - name: Run ruff
+        run: ruff check .
+
+      - name: Check formatting with black
+        run: black --check .
+
+  test:
+    name: Pytest matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11, 3.12, 3.13]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/*.py') }}
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest coverage
+
+      - name: Run tests with coverage
+        run: |
+          coverage run -m pytest -q
+          coverage report -m

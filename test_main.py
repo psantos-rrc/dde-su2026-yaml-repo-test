@@ -33,11 +33,14 @@ def test_greet_prints_expected_text(capsys):
     assert captured.out.strip() == "Happy Weekend"
 
 
-@pytest.mark.parametrize("func,expected", [
-    (hello, "Hello, DevOps learner!"),
-    (bye, "Goodbye!"),
-    (greet, "Happy Weekend"),
-])
+@pytest.mark.parametrize(
+    "func,expected",
+    [
+        (hello, "Hello, DevOps learner!"),
+        (bye, "Goodbye!"),
+        (greet, "Happy Weekend"),
+    ],
+)
 def test_prints_expected_text_param(func, capsys, expected):
     func()
     captured = capsys.readouterr()
@@ -58,6 +61,6 @@ def test_docstrings_present():
 
 
 def test_module_run_prints_both_greetings(capsys):
-    runpy.run_module('goodhello', run_name="__main__")
+    runpy.run_module("goodhello", run_name="__main__")
     out = capsys.readouterr().out.strip().splitlines()
     assert out == ["Hello, DevOps learner!", "Goodbye!"]
